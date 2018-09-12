@@ -36,18 +36,36 @@ def ConvertTemp(data,places):
 	temp = (((data*3.3)/float(1023))-0.5)*100
 	temp = round(temp,places)
 	return temp
-
+#convert data from LDR 
 def ConvertLDR(data,places):
-	#still to be calibrated
-channel = 0
-delay = .5
+	lightInten=(data*3.3)/float(1023)
+	lightInten=round(lightInten,places)
+	return lightInten
 
+channel = 0
+delay = 2
+
+#output 
 try:
+    print("----------------------------------------------")
+    print(" Time       Timer      Pot     Temp     Light ")
+    print("----------------------------------------------")
+
     while True:
-        sensr_data = GetData(channel)
-        sensr_volt = ConvertTemp(sensr_data,2)
-        print(sensr_volt)
-        time.sleep(delay)
-        
+	#read pot
+	pot_reading=ConvertPot(GetData(2),3)
+	#read temp sensor 
+	temp_reading=ConvertTemp(GetData(0),3)
+	#read light sensor 
+	light_reading=ConvertLDR(GetData(1),3)
+	#time 
+	str_time=time.strftime("%H:%M:%S")
+	#timer not implemented yet 
+	timer ="----------"
+
+	print(" {} {}   {}V  {}C  {}V".format(str_time,timer,pot_reading,temp_reading,light_reading))
+	print("------------------------------------------")
+	time.sleep(delay)
+
 except KeyboardInterrupt:
     spi.close()
