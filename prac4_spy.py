@@ -37,6 +37,7 @@ def ConvertTemp(data,places):
 	temp = round(temp,places)
 	return temp
 #convert data from LDR 
+# returns value in volts not percentage yet
 def ConvertLDR(data,places):
 	lightInten=(data*3.3)/float(1023)
 	lightInten=round(lightInten,places)
