@@ -26,19 +26,26 @@ def GetData(channel):
     adc=spi.xfer2([1,(8+channel)<<4,0])
     data = ((adc[1]&3) << 8)+adc[2]
     return data
-
-def ConvertVolts(data,places):
+#converts data from potentiometer to voltage 
+def ConvertPot(data,places):
     volts = (data*3.3)/float(1023)
     volts=round(volts,places)
     return volts
+#convert data from Temp sensor to degrees celcius
+def ConvertTemp(data,places):
+	temp = (((data*3.3)/float(1023))-0.5)*100
+	temp = round(temp,places)
+	return temp
 
-channel = 1
+def ConvertLDR(data,places):
+	#still to be calibrated
+channel = 0
 delay = .5
 
 try:
     while True:
         sensr_data = GetData(channel)
-        sensr_volt = ConvertVolts(sensr_data,2)
+        sensr_volt = ConvertTemp(sensr_data,2)
         print(sensr_volt)
         time.sleep(delay)
         
