@@ -41,7 +41,7 @@ try:
 		print values
 
 except KeyboardInterrupt:
-	pass
+	GPIO.cleanup()	# clean up GPIO on CTRL+C exitt
 
 # cleanup GPIO when finished
 GPIO.cleanup()
