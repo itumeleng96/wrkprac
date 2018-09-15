@@ -9,7 +9,21 @@ import os
 
 import sys
 
-#GPIO.setmode(GPIO.BCM)
+GPIO.setmode(GPIO.BCM)
+#initilaize buttons
+switch_reset=23
+switch_stop=24
+switch_changeFreq=25
+#initilaize pull ups
+GPIO.setup(switch_reset,GPIO.IN,pull_up_down=GPIO.PUD_UP)
+GPIO.setup(switch_stop,GPIO.IN,pull_up_down=GPIO.PUD_UP)
+GPIO.setup(switch_changeFreq,GPIO.IN,pull_up_down=GPIO.PUD_UP)
+
+#function definition:threaded callback
+
+#not done
+
+
 #open SPI  bus
 
 spi= spidev.SpiDev()   #create spi object
@@ -40,7 +54,8 @@ def ConvertTemp(data,places):
 # returns value in volts not percentage yet
 def ConvertLDR(data,places):
 	lightInten=(data*3.3)/float(1023)
-	lightInten=round(lightInten,places)
+	lightInten=(3.3-lightInten)/3.3
+	lightInten=round(lightInten*100,places)
 	return lightInten
 
 channel = 0
@@ -58,14 +73,14 @@ try:
 	#read temp sensor 
 	temp_reading=ConvertTemp(GetData(0),3)
 	#read light sensor 
-	light_reading=ConvertLDR(GetData(1),3)
+	light_reading=ConvertLDR(GetData(1),1)
 	#time 
 	str_time=time.strftime("%H:%M:%S")
 	#timer not implemented yet 
 	timer ="----------"
 
-	print(" {} {}   {}V  {}C  {}V".format(str_time,timer,pot_reading,temp_reading,light_reading))
-	print("------------------------------------------")
+	print(" {} {}   {}V  {}C  {}%".format(str_time,timer,pot_reading,temp_reading,light_reading))
+	print("---------------------------------------------")
 	time.sleep(delay)
 
 except KeyboardInterrupt:
