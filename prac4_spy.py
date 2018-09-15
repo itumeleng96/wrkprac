@@ -1,6 +1,4 @@
-
-<<<<<<< HEAD
-=======
+import RPi.GPIO as GPIO
 import spidev
 
 import time
@@ -116,4 +114,3 @@ try:
 
 except KeyboardInterrupt:
     spi.close()
->>>>>>> full_struct
