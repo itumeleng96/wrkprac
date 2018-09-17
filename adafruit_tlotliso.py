@@ -38,7 +38,7 @@ try:
 		# provide delay
 		time.sleep(delay)
 
-		print values
+		print (values)
 
 except KeyboardInterrupt:
 	GPIO.cleanup()	# clean up GPIO on CTRL+C exitt

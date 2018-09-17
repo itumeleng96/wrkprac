@@ -20,11 +20,11 @@ GPIO.setup(switch_3, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 # function definition: threaded callback
 def callback1(channel):
 	# put code here
-	print "Hello"
+	print ("Hello")
 
 def callback2(channel):
 	# put code here
-	print "World!"
+	print ("World!")
 
 # under a falling-edge detection, regardless of current execution
 # callback function will be called

@@ -1,6 +1,5 @@
 # !/usr/bin/python
 import RPi.GPIO as GPIO
-import Adafruit_MCP3008
 import spidev
 import time
 import os
@@ -38,11 +37,10 @@ try:
 	# read data
         sensr_data = GetData(channel)
         sensr_volt = ConvertVolts(sensr_data, 2)
-
-	print(sensr_volt)	# test statement
-
-	# wait before repeating the loop
-	time.sleep(delay)
+        
+        print(sensr_volt)
+        # wait before repeating the loop
+        time.sleep(delay)
 
 except KeyboardInterrupt:
     spi.close()
