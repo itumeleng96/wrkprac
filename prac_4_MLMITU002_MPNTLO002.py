@@ -74,11 +74,11 @@ def display(channel):
         if len(results) > 5:
             for i in range(5):
                 print(results[i])
-                print("---------------------------------------")
+                print("------------------------------------------")
         elif len(results) <= 5:
             for i in range(len(results)):
                 print(results[i])
-                print("---------------------------------------")
+                print("------------------------------------------")
         disp = False
 
 #add event detect for buttons
@@ -116,9 +116,9 @@ def ConvertLDR(data):
 
 #output 
 try:
-    print("---------------------------------------")
-    print(" Time      Timer     Pot   Temp  Light ")
-    print("---------------------------------------")
+    print("------------------------------------------")
+    print(" Time      Timer     Pot     Temp   Light ")
+    print("------------------------------------------")
     pot_reading=0.0
     temp_reading=0.0
     light_reading=0.0
@@ -139,7 +139,7 @@ try:
         
         if (startStop):  #start or stop sensors
             print(" {}  {}  {}V  {}C  {}%".format(str_time,elapsed_Time,pot_reading,temp_reading,light_reading))
-            print("---------------------------------------")
+            print("------------------------------------------")
             
             #read pot
             #results.append(" {}  {}  {}V  {}C  {}%".format(str_time,elapsed_Time,pot_reading,temp_reading,light_reading))
