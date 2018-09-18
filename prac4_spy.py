@@ -5,35 +5,82 @@ import time
 import os
 import sys
 
-spi = spidev.SpiDev()   #create spi object
-spi.open(0,0)
-spi.max_speed_hz=1000000;
-#RPI has one bus 0 and tow SPI devices o and 1
-
-# Set pins to trigger interrupts
-# set GPIO mode
 GPIO.setmode(GPIO.BCM)
 
-# select pins to trigger interrupts
-reset = 17
-frequency = 27
-stop = 22
-display = 18
+#initilaize buttons
+switch_reset = 23
+switch_stop = 24
+switch_changeFreq = 25
+switch_display = 18
 
-# Set pins as pull-up
-GPIO.setup(reset, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(frequency, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(stop, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(display, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+#initilaize pull ups
+GPIO.setup(switch_reset, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(switch_stop, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(switch_changeFreq, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(switch_display, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
-# Set defaults
-timer = 0
-channel = 0
-f = 0.5
-on = True     # holds if the monitoring system is operational
+#open SPI  bus
+spi = spidev.SpiDev()   #create spi object
+spi.open(0,0)
+spi.max_speed_hz = 1000000
+
+#parameters
+places=3
+frequency = 0.5
+startStop = True
+disp = False
+consoleTimer = 0
+elapsed_Time = 0
+results = [" "]*5
+#RPI has one bus #0 and two SPI devices 0 and 1 
+
+#threaded callbacks
+def changeFrequency(channel):
+    frequency
+    if (frequency == 0.5):
+        frequency = 1
+    elif (frequency == 1):
+        frequency=2
+    elif (frequency == 2):
+        frequency=0.5
+
+def reset(channel):
+    elapsed_Time
+    consoleTimer
+    elapsed_Time=time.time()
+    consoleTimer=time.time()
+    elapsed_Time=time.time()-consoleTimer
+
+def startStop(channel):
+    disp = True
+    startStop
+    if(startStop):
+        startStop=False
+    else:
+        startStop=True
+
+def display(channel):
+    disp
+    if disp == False:
+        pass
+    else:
+        print("-----------------------------------------")
+        if len(results) > 5:
+            for i in range(5):
+                print(results[i])
+                print("-----------------------------------------")
+        elif len(results) <= 5:
+            for i in range(len(results)):
+                print(results[i])
+                print("-----------------------------------------")
+
+#add event detect for buttons
+GPIO.add_event_detect(switch_reset,GPIO.FALLING,callback=reset,bouncetime=200)
+GPIO.add_event_detect(switch_stop,GPIO.FALLING,callback=startStop,bouncetime=200)
+GPIO.add_event_detect(switch_changeFreq,GPIO.FALLING,callback=changeFrequency,bouncetime=200)
+GPIO.add_event_detect(switch_display,GPIO.FALLING,callback=display,bouncetime=200)
 
 #function to read ADC data from a channel
-places = 3
 def GetData(channel):
     adc=spi.xfer2([1,(8+channel)<<4,0])
     data = ((adc[1]&3) << 8)+adc[2]
@@ -48,78 +95,52 @@ def ConvertPot(data,places):
 #convert data from Temp sensor to degrees celcius
 def ConvertTemp(data,places):
     temp = (((data*3.3)/float(1023))-0.5)*100
-    temp = round(temp,places)
+    temp = round(temp)
     return temp
 
-# convert data from LDR 
+#convert data from LDR 
 # returns value in volts not percentage yet
 def ConvertLDR(data):
     lightInten=(data*3.3)/float(1023)
-    lightPercent=lightInten*100/3.3
-    lightPercent=round(lightPercent)
-    return lightPercent
+    lightInten=(3.3-lightInten)/3.3
+    lightInten=round(lightInten*100)
+    return lightInten
 
-# start program
+
+#output 
 try:
-    print("-----------------------------------------")
-    print(" Time      Timer     Pot   Temp    Light ")
-    print("-----------------------------------------")
-
+    print("---------------------------------------")
+    print(" Time      Timer     Pot   Temp  Light ")
+    print("---------------------------------------")
+    pot_reading=0.0
+    temp_reading=0.0
+    light_reading=0.0
+    consoleTimer=time.time()
     while True:
         
-        if GPIO.input(reset) == 0:
-            timer = 0
-            GPIO.cleanup()
-            
-        if GPIO.input(frequency) == 0:
-            if f >= 2.0:
-                f = 0.5
-            elif f < 2.0:
-                f = f*2
+        if (startStop):  #start or stop sensors
+            #read pot
+            pot_reading=ConvertPot(GetData(2),3)
+            #read temp sensor
+            temp_reading=ConvertTemp(GetData(0),3)
+            #read light sensor
+            light_reading=ConvertLDR(GetData(1))
         
-        if on == False:  # if the monitoring system to off
-            if GPIO.input(stop) == 0:
-                on = True
-                print("Starting monitoring system...\n")
-                                
-                print("-----------------------------------------")
-                print(" Time      Timer     Pot   Temp    Light ")
-                print("-----------------------------------------")
-                
-                #read pot
-                pot_reading = ConvertPot(GetData(2),3)
-                #read temp sensor
-                temp_reading = ConvertTemp(GetData(0),3)
-                #read light sensor
-                light_reading = ConvertLDR(GetData(1))
-                #time
-                str_time = time.strftime("%H:%M:%S")
-                
-                #timer not implemented yet
-                timer = "00:00:00"
-                print(" {}  {}  {}V  {}C  {}%".format(str_time,timer,pot_reading,temp_reading,light_reading))
-                print("-----------------------------------------")
-                time.sleep(f)
+        elif (startStop == False):
+            if (disp):
+                for i in range(5):
+                    results.append(" {}  {}  {}V  {}C  {}%".format(str_time,elapsed_Time,pot_reading,temp_reading,light_reading))
         
-        elif on == True:
-            if GPIO.input(stop) == 0:
-                print("Monitoring system stopped")
-                pass
-            else:
-                #read pot
-                pot_reading=ConvertPot(GetData(2),3)
-                #read temp sensor
-                temp_reading=ConvertTemp(GetData(0),3)
-                #read light sensor
-                light_reading=ConvertLDR(GetData(1))
-                #time
-                str_time=time.strftime("%H:%M:%S")
-                
-                #timer not implemented yet
-                timer = "00:00:00"
-                print(" {}  {}  {}V  {}C  {}%".format(str_time,timer,pot_reading,temp_reading,light_reading))
-                print("-----------------------------------------")
-                time.sleep(f)
+        #time
+        str_time=time.strftime("%H:%M:%S")
+        elapsed_Time=time.time() - consoleTimer
+        elapsed_Time=time.strftime("%H:%M:%S",time.gmtime(elapsed_Time))
+
+        result = " {}  {}  {}V  {}C  {}%".format(str_time,elapsed_Time,pot_reading,temp_reading,light_reading)
+        print(result)
+        print("---------------------------------------")
+        time.sleep(frequency)
 
 except KeyboardInterrupt:
     spi.close()
+    GPIO.cleanup()
